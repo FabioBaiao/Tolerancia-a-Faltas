@@ -40,6 +40,8 @@ public class ActiveReplication {
         if (opened != null)
             return opened;
 
+        opened = new CompletableFuture<>();
+
         tc.execute(() -> s.open()).join().join();
 
         s.join(groupName);
@@ -59,7 +61,7 @@ public class ActiveReplication {
 
         updated = new CompletableFuture<>();
 
-        LinkedList<Tuple<?>> savedReqs = new LinkedList<>();
+        LinkedList<Tuple<?>> savedObjects = new LinkedList<>();
 
         // primeiro processo
         if (this.id == 0) {
@@ -73,10 +75,10 @@ public class ActiveReplication {
                 // considerar outros requests apenas quando receber proprio ReqState
                 if (this.id == req.getId()) {
                     for (Class<?> t : types) {
-                        saveReqHandler(t, savedReqs);
+                        saveObjectHandler(t, savedObjects);
                     }
 
-                    saveReqStateHandler(savedReqs);
+                    saveReqStateHandler(savedObjects);
                 }
             });
 
@@ -86,7 +88,7 @@ public class ActiveReplication {
                 // atualizar estado
                 setState.accept(req.getState());
                 // responder a todos os requests guardados
-                for (Tuple<?> t : savedReqs) {
+                for (Tuple<?> t : savedObjects) {
                     updateState.accept(t);
                 }
 
@@ -112,20 +114,20 @@ public class ActiveReplication {
         s.multicast(msg, req);
     }
 
-    private <T> void saveReqHandler(Class<T> t, LinkedList<Tuple<?>> savedReqs) {
+    private <T> void saveObjectHandler(Class<T> t, LinkedList<Tuple<?>> savedObjects) {
         // handler para guardar requests do tipo t ate receber resposta com o estado
-        s.handler(t, (msg, req) -> {
+        s.handler(t, (msg, obj) -> {
             // guardar request
-            savedReqs.add(new Tuple<>(t, msg, (Req) req));
+            savedObjects.add(new Tuple<>(t, msg, obj));
         });
     }
 
-    private void saveReqStateHandler(LinkedList<Tuple<?>> savedReqs) {
+    private void saveReqStateHandler(LinkedList<Tuple<?>> savedObjects) {
 
         //handler para guardar ReqStates ate receber resposta com o estado
         s.handler(ReqState.class, (msg, req) -> {
             // guardar request
-            savedReqs.add(new Tuple<>(ReqState.class, msg, req));
+            savedObjects.add(new Tuple<>(ReqState.class, msg, req));
         });
     }
 
