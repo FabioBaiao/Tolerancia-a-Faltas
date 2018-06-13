@@ -24,14 +24,19 @@ public class ActiveReplication {
     private CompletableFuture<ActiveReplication> opened;
     private CompletableFuture<ActiveReplication> updated;
 
-    public ActiveReplication(int id) throws SpreadException {
+    public ActiveReplication(int id, boolean groupMembership) throws SpreadException {
         this.id = id;
-        this.s = new Spread("srv-" + id, false);
+        this.groupName = "servers";
+        this.s = new Spread("srv-" + id, groupMembership);
 
         this.tc = new SingleThreadContext("srv-%d", new Serializer());
+
+        tc.serializer()
+                .register(ReqState.class)
+                .register(RepState.class);
     }
 
-    public CompletableFuture<ActiveReplication> openAndJoin(String groupName) {
+    public CompletableFuture<ActiveReplication> open() {
         if (opened != null)
             return opened;
 
@@ -82,7 +87,7 @@ public class ActiveReplication {
 
                 // atualizar estado
                 setState.accept(req.getState());
-                // TODO responder a todos os requests guardados
+                // responder a todos os requests guardados
                 for (Tuple<?> t : savedReqs) {
                     updateState.accept(t);
                 }
@@ -148,4 +153,7 @@ public class ActiveReplication {
         s.handler(type, rh);
     }
 
+    public void join(String groupName) {
+        s.join(groupName);
+    }
 }
