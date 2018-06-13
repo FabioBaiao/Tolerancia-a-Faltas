@@ -1,4 +1,3 @@
-import converters.LocalDateTimeConverter;
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.CatalystSerializable;
@@ -10,6 +9,7 @@ import java.util.Optional;
 
 public class Task implements CatalystSerializable, Comparable<Task> {
 
+    private long id;
     private String url;
     private String name;
     private String description;
@@ -19,12 +19,17 @@ public class Task implements CatalystSerializable, Comparable<Task> {
     public Task() {
     }
 
-    public Task(String url, String name, String description) {
+    public Task(long id, String url, String name, String description, LocalDateTime creationDateTime) {
+        this.id = id;
         this.url = url;
         this.name = name;
         this.description = description;
-        this.creationDateTime = LocalDateTime.now();
+        this.creationDateTime = creationDateTime;
         this.completionDateTime = null;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public String getUrl() {
@@ -51,10 +56,24 @@ public class Task implements CatalystSerializable, Comparable<Task> {
      * @return <tt>true</tt> if this Task wasn't already complete; <tt>false</tt> otherwise
      */
     public boolean complete() {
-        if (completionDateTime != null)
+        if (completionDateTime != null) {
             return false;
-
+        }
         completionDateTime = LocalDateTime.now();
+
+        return true;
+    }
+
+    public boolean complete(LocalDateTime completionDateTime) {
+        if (this.completionDateTime != null) {
+            return false;
+        }
+
+        if (!completionDateTime.isAfter(creationDateTime)) {
+            throw new IllegalArgumentException("Completion date and time must be after creation date and time");
+        }
+        this.completionDateTime = completionDateTime;
+
         return true;
     }
 
@@ -64,35 +83,33 @@ public class Task implements CatalystSerializable, Comparable<Task> {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        bufferOutput.writeLong(id);
         bufferOutput.writeString(url);
         bufferOutput.writeString(name);
         bufferOutput.writeString(description);
 
-        long creationTimestamp = LocalDateTimeConverter.convertToTimestamp(creationDateTime);
-        bufferOutput.writeLong(creationTimestamp);
+        serializer.writeObject(creationDateTime, bufferOutput);
 
         boolean isComplete = completionDateTime != null;
         bufferOutput.writeBoolean(isComplete);
 
         if (isComplete) {
-            long completionTimestamp = LocalDateTimeConverter.convertToTimestamp(completionDateTime);
-            bufferOutput.writeLong(completionTimestamp);
+            serializer.writeObject(completionDateTime, bufferOutput);
         }
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        this.id = bufferInput.readLong();
         this.url = bufferInput.readString();
         this.name = bufferInput.readString();
         this.description = bufferInput.readString();
 
-        long creationTimestamp = bufferInput.readLong();
-        this.creationDateTime = LocalDateTimeConverter.convertFromTimestamp(creationTimestamp);
+        this.completionDateTime = serializer.readObject(bufferInput);
 
         boolean isComplete = bufferInput.readBoolean();
         if (isComplete) {
-            long completionTimestamp = bufferInput.readLong();
-            this.completionDateTime = LocalDateTimeConverter.convertFromTimestamp(completionTimestamp);
+            this.completionDateTime = serializer.readObject(bufferInput);
         }
     }
 
@@ -104,19 +121,20 @@ public class Task implements CatalystSerializable, Comparable<Task> {
         if (!(obj instanceof Task))
             return false;
 
-        Task task = (Task) obj;
-        return Objects.equals(url, task.url);
+        Task other = (Task) obj;
+        return this.id == other.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(url);
+        return Objects.hash(id);
     }
 
     @Override
     public String toString() {
         return "Task{" +
-                "url='" + url + '\'' +
+                "id=" + id +
+                ", url='" + url + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", creationDateTime=" + creationDateTime +
@@ -126,6 +144,6 @@ public class Task implements CatalystSerializable, Comparable<Task> {
 
     @Override
     public int compareTo(Task other) {
-        return this.url.compareTo(other.url);
+        return Long.compare(this.id, other.id);
     }
 }
