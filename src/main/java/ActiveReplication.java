@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ActiveReplication {
 
@@ -40,8 +40,6 @@ public class ActiveReplication {
         if (opened != null)
             return opened;
 
-        opened = new CompletableFuture<>();
-
         tc.execute(() -> s.open()).join().join();
 
         s.join(groupName);
@@ -54,7 +52,7 @@ public class ActiveReplication {
     }
 
     public CompletableFuture<ActiveReplication> update
-            (List<Class<?>> types, Consumer<State> setState, Function<Void, State> getState, Consumer<Tuple<?>> updateState) {
+            (List<Class<?>> types, Consumer<State> setState, Supplier<State> getState, Consumer<Tuple<?>> updateState) {
 
         if (updated != null)
             return updated;
@@ -131,14 +129,13 @@ public class ActiveReplication {
         });
     }
 
-    private void finalReqStateHandler(Function<Void, State> getState) {
+    private void finalReqStateHandler(Supplier<State> getState) {
 
         // handler para responder com estado
         s.handler(ReqState.class, (msg, req) -> {
-            State state = getState.apply(null);
+            State state = getState.get();
 
             reply(msg.getSender(), new RepState(state));
-
         });
     }
 
