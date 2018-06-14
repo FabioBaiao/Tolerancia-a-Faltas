@@ -32,12 +32,12 @@ public class TaskSchedulerImpl extends State implements TaskScheduler {
     }
 
     private String generateURL() {
-        throw new UnsupportedOperationException("To be implemented");
+        return "tasks://" + nextTaskId;
     }
 
     public String addTask(String name, String description, LocalDateTime creationDateTime) {
-        long id = nextTaskId++;
         String url = generateURL();
+        long id = nextTaskId++;
 
         unassignedTasks.add(new Task(id, url, name, description, creationDateTime));
         return url;
@@ -82,12 +82,14 @@ public class TaskSchedulerImpl extends State implements TaskScheduler {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        bufferOutput.writeLong(nextTaskId);
         serializer.writeObject(unassignedTasks, bufferOutput);
         serializer.writeObject(assignedTasks, bufferOutput);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        nextTaskId = bufferInput.readLong();
         this.unassignedTasks = serializer.readObject(bufferInput);
         this.assignedTasks = serializer.readObject(bufferInput);
     }

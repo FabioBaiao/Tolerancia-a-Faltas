@@ -12,9 +12,11 @@ public class AssignTaskRep extends Rep {
     private Optional<Task> maybeTask;
 
     public AssignTaskRep() {
+        super();
     }
 
-    public AssignTaskRep(Optional<Task> maybeTask) {
+    public AssignTaskRep(int id, Optional<Task> maybeTask) {
+        super(id);
         this.maybeTask = maybeTask;
     }
 
@@ -24,11 +26,13 @@ public class AssignTaskRep extends Rep {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        super.writeObject(bufferOutput, serializer);
         serializer.writeObject(maybeTask, bufferOutput);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        super.readObject(bufferInput, serializer);
         this.maybeTask = serializer.readObject(bufferInput);
     }
 }

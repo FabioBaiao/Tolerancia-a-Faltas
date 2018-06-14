@@ -2,6 +2,7 @@ import replication.ActiveReplication;
 import replication.State;
 import replication.Tuple;
 import rmi.*;
+import serializers.TaskSchedulingTypeResolver;
 import spread.MembershipInfo;
 import spread.SpreadException;
 import spread.SpreadGroup;
@@ -23,7 +24,7 @@ public class Server implements Runnable {
 
     public Server(String[] args) throws SpreadException {
 
-        this.ar = new ActiveReplication(Integer.parseInt(args[0]), true);
+        this.ar = new ActiveReplication(Integer.parseInt(args[0]), true, new TaskSchedulingTypeResolver());
 
         this.ts = new TaskSchedulerImpl();
     }
@@ -50,19 +51,19 @@ public class Server implements Runnable {
     private void addTask(SpreadMessage msg, AddTaskReq req) {
         String url = ts.addTask(req.getName(), req.getDescription(), req.getCreationDateTime());
 
-        this.ar.reply(msg.getSender(), new AddTaskRep(url));
+        this.ar.reply(msg.getSender(), new AddTaskRep(req.getId(), url));
     }
 
     private void assignTask(SpreadMessage msg, AssignTaskReq req) {
         Optional<Task> ot = ts.assignTask(msg.getSender().toString());
 
-        this.ar.reply(msg.getSender(), new AssignTaskRep(ot));
+        this.ar.reply(msg.getSender(), new AssignTaskRep(req.getId(), ot));
     }
 
     private void completeTask(SpreadMessage msg, CompleteTaskReq req) {
         Optional<Task> ot = ts.completeTask(msg.getSender().toString(), req.getUrl(), req.getCompletionDateTime());
 
-        this.ar.reply(msg.getSender(), new CompleteTaskRep(ot));
+        this.ar.reply(msg.getSender(), new CompleteTaskRep(req.getId(), ot));
     }
 
     private void unassignAll(SpreadMessage msg, MembershipInfo req) {

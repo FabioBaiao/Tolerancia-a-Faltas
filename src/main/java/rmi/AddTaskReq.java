@@ -13,6 +13,7 @@ public class AddTaskReq extends Req {
     private LocalDateTime creationDateTime;
 
     public AddTaskReq() {
+        super();
     }
 
     public AddTaskReq(String name, String description) {
@@ -20,6 +21,7 @@ public class AddTaskReq extends Req {
     }
 
     public AddTaskReq(String name, String description, LocalDateTime creationDateTime) {
+        super();
         this.name = name;
         this.description = description;
         this.creationDateTime = creationDateTime;
@@ -39,6 +41,7 @@ public class AddTaskReq extends Req {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        super.writeObject(bufferOutput, serializer);
         bufferOutput.writeString(name);
         bufferOutput.writeString(description);
         serializer.writeObject(creationDateTime, bufferOutput);
@@ -46,6 +49,7 @@ public class AddTaskReq extends Req {
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        super.readObject(bufferInput, serializer);
         this.name = bufferInput.readString();
         this.description = bufferInput.readString();
         this.creationDateTime = serializer.readObject(bufferInput);

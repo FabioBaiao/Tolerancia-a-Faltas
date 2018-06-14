@@ -9,9 +9,11 @@ public class AddTaskRep extends Rep {
     private String url;
 
     public AddTaskRep() {
+        super();
     }
 
-    public AddTaskRep(String url) {
+    public AddTaskRep(int id, String url) {
+        super(id);
         this.url = url;
     }
 
@@ -21,11 +23,13 @@ public class AddTaskRep extends Rep {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        super.writeObject(bufferOutput, serializer);
         bufferOutput.writeString(url);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        super.readObject(bufferInput, serializer);
         this.url = bufferInput.readString();
     }
 }

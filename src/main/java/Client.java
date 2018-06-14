@@ -1,4 +1,4 @@
-import rmi.TaskSchedulerStub;
+import tasks.TaskSchedulerStub;
 import spread.SpreadException;
 import tasks.Task;
 import tasks.TaskScheduler;
@@ -84,7 +84,8 @@ public class Client implements Runnable {
         System.out.print("Description: ");
         String description = in.readLine();
 
-        taskScheduler.addTask(name, description, LocalDateTime.now());
+        String url = taskScheduler.addTask(name, description, LocalDateTime.now());
+        System.out.println("Task added: " + url);
         return 0;
     }
 

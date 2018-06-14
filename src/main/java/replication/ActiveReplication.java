@@ -2,8 +2,10 @@ package replication;
 
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
+import io.atomix.catalyst.serializer.SerializableTypeResolver;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
+import rmi.AddTaskRep;
 import rmi.Rep;
 import spread.SpreadException;
 import spread.SpreadGroup;
@@ -27,12 +29,12 @@ public class ActiveReplication {
     private CompletableFuture<ActiveReplication> opened;
     private CompletableFuture<ActiveReplication> updated;
 
-    public ActiveReplication(int id, boolean groupMembership) throws SpreadException {
+    public ActiveReplication(int id, boolean groupMembership, SerializableTypeResolver tr) throws SpreadException {
         this.id = id;
         this.groupName = "servers";
         this.s = new Spread("srv-" + id, groupMembership);
 
-        this.tc = new SingleThreadContext("srv-%d", new Serializer());
+        this.tc = new SingleThreadContext("srv-%d", new Serializer(tr));
 
         tc.serializer()
                 .register(ReqState.class)
@@ -42,6 +44,8 @@ public class ActiveReplication {
     public CompletableFuture<ActiveReplication> open() {
         if (opened != null)
             return opened;
+
+        opened = new CompletableFuture<>();
 
         tc.execute(() -> s.open()).join().thenRun(() -> {
             s.join(groupName);

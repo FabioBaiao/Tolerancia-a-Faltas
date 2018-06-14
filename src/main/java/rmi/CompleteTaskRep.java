@@ -12,9 +12,11 @@ public class CompleteTaskRep extends Rep {
     private Optional<Task> maybeTask;
 
     public CompleteTaskRep() {
+        super();
     }
 
-    public CompleteTaskRep(Optional<Task> maybeTask) {
+    public CompleteTaskRep(int id, Optional<Task> maybeTask) {
+        super(id);
         this.maybeTask = maybeTask;
     }
 
@@ -24,11 +26,13 @@ public class CompleteTaskRep extends Rep {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        super.writeObject(bufferOutput, serializer);
         serializer.writeObject(maybeTask, bufferOutput);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        super.readObject(bufferInput, serializer);
         this.maybeTask = serializer.readObject(bufferInput);
     }
 }

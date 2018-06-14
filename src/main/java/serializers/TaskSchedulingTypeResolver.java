@@ -24,8 +24,8 @@ public class TaskSchedulingTypeResolver implements SerializableTypeResolver {
 
         serializerRegistry.register(Task.class);
 
-        serializerRegistry.register(ReqState.class);
-        serializerRegistry.register(RepState.class);
+        //serializerRegistry.register(ReqState.class);
+        //serializerRegistry.register(RepState.class);
 
         serializerRegistry.register(AddTaskReq.class);
         serializerRegistry.register(AddTaskRep.class);

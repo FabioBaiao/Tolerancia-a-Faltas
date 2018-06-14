@@ -1,13 +1,13 @@
-package rmi;
+package tasks;
 
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
+import rmi.*;
 import serializers.TaskSchedulingTypeResolver;
 import spread.SpreadException;
-import tasks.Task;
-import tasks.TaskScheduler;
+import spread.SpreadMessage;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -16,16 +16,21 @@ import java.util.concurrent.ExecutionException;
 
 public class TaskSchedulerStub implements TaskScheduler {
 
-    private final String groupName;
+    //private final String groupName;
     private final Spread s;
     private final ThreadContext tc;
 
-    private CompletableFuture<Object> futureResult; // future result of current request
+    private CompletableFuture<Rep> futureResult; // future result of current request
+    private int waitingId;
+    private int reqId;
 
     private TaskSchedulerStub(String privateGroupName) throws SpreadException {
-        this.groupName = "all";
+        //this.groupName = "all";
         this.s = new Spread(privateGroupName, false);
         this.tc = new SingleThreadContext("cli-%d", new Serializer(new TaskSchedulingTypeResolver()));
+
+        this.waitingId = -1;
+        this.reqId = 0;
     }
 
     public static TaskSchedulerStub newInstance(String privateGroupName) throws SpreadException {
@@ -33,12 +38,16 @@ public class TaskSchedulerStub implements TaskScheduler {
 
         instance.registerHandlers();
         instance.open();
+        instance.join("all");
 
         return instance;
     }
 
     private void registerHandlers() {
-        throw new UnsupportedOperationException("To be implemented");
+
+        s.handler(AddTaskRep.class, (msg, rep) -> receive(rep));
+        s.handler(AssignTaskRep.class, (msg, rep) -> receive(rep));
+        s.handler(CompleteTaskRep.class, (msg, rep) -> receive(rep));
     }
 
     private void open() throws SpreadException {
@@ -52,14 +61,43 @@ public class TaskSchedulerStub implements TaskScheduler {
         }
     }
 
+    private void join(String groupName) {
+        s.join(groupName);
+    }
+
+    private void receive(Rep rep) {
+        if (rep.getId() == waitingId) {
+            futureResult.complete(rep);
+            this.waitingId = -1;
+        }
+    }
+
+    private Rep sendAndReceive(Req req) {
+        this.futureResult = new CompletableFuture<>();
+        this.waitingId = this.reqId;
+        req.setId(this.reqId++);
+
+        SpreadMessage msg = new SpreadMessage();
+        msg.addGroup("servers");
+        s.multicast(msg, req);
+
+        return this.futureResult.join();
+    }
+
     @Override
     public String addTask(String name, String description, LocalDateTime creationDateTime) {
-        throw new UnsupportedOperationException("To be implemented");
+        AddTaskReq req = new AddTaskReq(name, description, creationDateTime);
+
+        AddTaskRep rep = (AddTaskRep) sendAndReceive(req);
+        return rep.getUrl();
     }
 
     @Override
     public Optional<Task> assignTask(String privateGroupName) {
-        throw new UnsupportedOperationException("To be implemented");
+        AssignTaskReq req = new AssignTaskReq(privateGroupName);
+
+        AssignTaskRep rep = (AssignTaskRep) sendAndReceive(req);
+        return rep.getTask();
     }
 
     @Override
@@ -69,6 +107,9 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     @Override
     public Optional<Task> completeTask(String privateGroupName, String url, LocalDateTime completionDateTime) {
-        throw new UnsupportedOperationException("To be implemented");
+        CompleteTaskReq req = new CompleteTaskReq(privateGroupName, url, completionDateTime);
+
+        CompleteTaskRep rep = (CompleteTaskRep) sendAndReceive(req);
+        return rep.getTask();
     }
 }

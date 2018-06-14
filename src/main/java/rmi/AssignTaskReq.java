@@ -12,6 +12,7 @@ public class AssignTaskReq extends Req {
     }
 
     public AssignTaskReq(String privateGroupName) {
+        super();
         this.privateGroupName = privateGroupName;
     }
 
@@ -21,11 +22,13 @@ public class AssignTaskReq extends Req {
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
+        super.writeObject(bufferOutput, serializer);
         bufferOutput.writeString(privateGroupName);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
+        super.readObject(bufferInput, serializer);
         this.privateGroupName = bufferInput.readString();
     }
 }
