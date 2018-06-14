@@ -1,3 +1,5 @@
+package replication;
+
 import spread.SpreadMessage;
 
 public class Tuple<T> {

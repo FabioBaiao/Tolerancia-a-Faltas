@@ -1,3 +1,5 @@
+package tasks;
+
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.CatalystSerializable;
@@ -53,7 +55,7 @@ public class Task implements CatalystSerializable, Comparable<Task> {
     }
 
     /**
-     * @return <tt>true</tt> if this Task wasn't already complete; <tt>false</tt> otherwise
+     * @return <tt>true</tt> if this tasks.Task wasn't already complete; <tt>false</tt> otherwise
      */
     public boolean complete() {
         if (completionDateTime != null) {
@@ -132,7 +134,7 @@ public class Task implements CatalystSerializable, Comparable<Task> {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "tasks.Task{" +
                 "id=" + id +
                 ", url='" + url + '\'' +
                 ", name='" + name + '\'' +

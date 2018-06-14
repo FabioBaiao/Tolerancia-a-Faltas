@@ -1,26 +1,34 @@
+package rmi;
+
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
+import tasks.Task;
 
 import java.util.Optional;
 
 public class AssignTaskRep extends Rep {
 
-    private Optional<Task> ot;
+    private Optional<Task> maybeTask;
 
-    public AssignTaskRep() {}
+    public AssignTaskRep() {
+    }
 
-    public AssignTaskRep(Optional<Task> ot) {
-        this.ot = ot;
+    public AssignTaskRep(Optional<Task> maybeTask) {
+        this.maybeTask = maybeTask;
+    }
+
+    public Optional<Task> getTask() {
+        return maybeTask;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-
+        serializer.writeObject(maybeTask, bufferOutput);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-
+        this.maybeTask = serializer.readObject(bufferInput);
     }
 }

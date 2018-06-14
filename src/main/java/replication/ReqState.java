@@ -1,28 +1,31 @@
+package replication;
+
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
+import rmi.Req;
 
-public class RepState extends Rep {
+public class ReqState extends Req {
 
-    private State state;
+    private int id;
 
-    public RepState() {}
+    public ReqState() {}
 
-    public RepState(State state) {
-        this.state = state;
+    public ReqState(int id) {
+        this.id = id;
     }
 
-    public State getState() {
-        return state;
+    public int getId() {
+        return id;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-        serializer.writeObject(state, bufferOutput);
+        bufferOutput.writeInt(id);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-        this.state = serializer.readObject(bufferInput);
+        id = bufferInput.readInt();
     }
 }

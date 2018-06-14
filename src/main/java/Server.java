@@ -1,7 +1,14 @@
+import replication.ActiveReplication;
+import replication.State;
+import replication.Tuple;
+import rmi.*;
 import spread.MembershipInfo;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
+import tasks.Task;
+import tasks.TaskScheduler;
+import tasks.TaskSchedulerImpl;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -18,7 +25,7 @@ public class Server implements Runnable {
 
         this.ar = new ActiveReplication(Integer.parseInt(args[0]), true);
 
-        this.ts = new TaskScheduler();
+        this.ts = new TaskSchedulerImpl();
     }
 
     @Override
@@ -30,7 +37,7 @@ public class Server implements Runnable {
         List<Class<?>> types = getTypes();
 
         Consumer<State> setState = (state) -> this.ts = (TaskScheduler) state;
-        Supplier<State> getState = () -> this.ts;
+        Supplier<State> getState = () -> (State) this.ts;
 
         Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = getUpdateFunctions();
         Consumer<Tuple<?>> updateState = (t) -> updateFunctions.get(t.getType()).accept(t.getMsg(), t.getObject());
@@ -41,7 +48,7 @@ public class Server implements Runnable {
     }
 
     private void addTask(SpreadMessage msg, AddTaskReq req) {
-        String url = ts.addTask(req.getName(), req.getDescription());
+        String url = ts.addTask(req.getName(), req.getDescription(), req.getCreationDateTime());
 
         this.ar.reply(msg.getSender(), new AddTaskRep(url));
     }
@@ -53,7 +60,7 @@ public class Server implements Runnable {
     }
 
     private void completeTask(SpreadMessage msg, CompleteTaskReq req) {
-        Optional<Task> ot = ts.completeTask(msg.getSender().toString(), req.getUrl());
+        Optional<Task> ot = ts.completeTask(msg.getSender().toString(), req.getUrl(), req.getCompletionDateTime());
 
         this.ar.reply(msg.getSender(), new CompleteTaskRep(ot));
     }

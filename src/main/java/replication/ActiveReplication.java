@@ -1,7 +1,10 @@
+package replication;
+
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
+import rmi.Rep;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
@@ -40,15 +43,10 @@ public class ActiveReplication {
         if (opened != null)
             return opened;
 
-        opened = new CompletableFuture<>();
-
-        tc.execute(() -> s.open()).join().join();
-
-        s.join(groupName);
-
-        this.groupName = groupName;
-
-        opened.complete(this);
+        tc.execute(() -> s.open()).join().thenRun(() -> {
+            s.join(groupName);
+            opened.complete(this);
+        });
 
         return opened;
     }
@@ -68,11 +66,10 @@ public class ActiveReplication {
             finalReqStateHandler(getState);
 
             updated.complete(this);
-        }
-        else {
-            // handler para receber ReqStates ate ao ReqState que foi enviado pelo proprio
+        } else {
+            // handler para receber ReqStates ate ao replication.ReqState que foi enviado pelo proprio
             s.handler(ReqState.class, (msg, req) -> {
-                // considerar outros requests apenas quando receber proprio ReqState
+                // considerar outros requests apenas quando receber proprio replication.ReqState
                 if (this.id == req.getId()) {
                     for (Class<?> t : types) {
                         saveObjectHandler(t, savedObjects);
