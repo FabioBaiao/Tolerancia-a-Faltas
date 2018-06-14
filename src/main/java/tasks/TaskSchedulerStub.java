@@ -6,7 +6,6 @@ import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
 import rmi.*;
 import serializers.BaseTaskSchedulingTypeResolver;
-import serializers.ServerTaskSchedulingTypeResolver;
 import spread.SpreadException;
 import spread.SpreadMessage;
 

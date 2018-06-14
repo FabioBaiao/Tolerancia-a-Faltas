@@ -5,7 +5,6 @@ import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.SerializableTypeResolver;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
-import rmi.AddTaskRep;
 import rmi.Rep;
 import spread.SpreadException;
 import spread.SpreadGroup;

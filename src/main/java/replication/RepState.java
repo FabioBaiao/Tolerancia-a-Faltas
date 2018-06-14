@@ -3,7 +3,6 @@ package replication;
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
-import replication.State;
 import rmi.Rep;
 
 public class RepState extends Rep {
