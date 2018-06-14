@@ -1,11 +1,13 @@
+package replication;
+
 import spread.SpreadMessage;
 
 public class Tuple<T> {
     private Class<T> type;
     private SpreadMessage msg;
-    private Req req;
+    private T req;
 
-    public Tuple(Class<T> type, SpreadMessage msg, Req req) {
+    public Tuple(Class<T> type, SpreadMessage msg, T req) {
         this.type = type;
         this.msg = msg;
         this.req = req;
@@ -19,7 +21,7 @@ public class Tuple<T> {
         return msg;
     }
 
-    public Req getReq() {
+    public T getReq() {
         return req;
     }
 }

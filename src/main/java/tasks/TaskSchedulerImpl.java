@@ -1,6 +1,9 @@
+package tasks;
+
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
+import replication.State;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -9,7 +12,7 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 
 // Not thread safe
-public class TaskScheduler extends State {
+public class TaskSchedulerImpl extends State implements TaskScheduler {
 
     private static long nextTaskId = 0;
 
@@ -23,7 +26,7 @@ public class TaskScheduler extends State {
      */
     private Map<String, Map<String, Task>> assignedTasks;
 
-    public TaskScheduler() {
+    public TaskSchedulerImpl() {
         this.unassignedTasks = new PriorityQueue<>();
         this.assignedTasks = new HashMap<>();
     }

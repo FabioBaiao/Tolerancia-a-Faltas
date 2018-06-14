@@ -1,28 +1,31 @@
+package rmi;
+
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
 
-public class RepState extends Rep {
+public class AddTaskRep extends Rep {
 
-    private State state;
+    private String url;
 
-    public RepState() {}
-
-    public RepState(State state) {
-        this.state = state;
+    public AddTaskRep() {
     }
 
-    public State getState() {
-        return state;
+    public AddTaskRep(String url) {
+        this.url = url;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-        serializer.writeObject(state, bufferOutput);
+        bufferOutput.writeString(url);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-        this.state = serializer.readObject(bufferInput);
+        this.url = bufferInput.readString();
     }
 }

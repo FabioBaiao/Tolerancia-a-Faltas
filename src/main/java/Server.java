@@ -1,3 +1,6 @@
+import replication.ActiveReplication;
+import replication.State;
+import replication.Tuple;
 import spread.MembershipInfo;
 import spread.SpreadException;
 import spread.SpreadGroup;
