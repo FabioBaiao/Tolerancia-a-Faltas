@@ -41,9 +41,8 @@ public class Server implements Runnable {
         Supplier<State> getState = () -> (State) this.ts;
 
         Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = getUpdateFunctions();
-        Consumer<Tuple<?>> updateState = (t) -> updateFunctions.get(t.getType()).accept(t.getMsg(), t.getObject());
 
-        ar.update(types, setState, getState, updateState)
+        ar.update(types, setState, getState, updateFunctions)
                 .thenRun(() -> createHandlers());
 
     }

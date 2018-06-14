@@ -12,6 +12,7 @@ import spread.SpreadMessage;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -55,7 +56,10 @@ public class ActiveReplication {
     }
 
     public CompletableFuture<ActiveReplication> update
-            (List<Class<?>> types, Consumer<State> setState, Supplier<State> getState, Consumer<Tuple<?>> updateState) {
+            (List<Class<?>> types,
+             Consumer<State> setState,
+             Supplier<State> getState,
+             Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions) {
 
         if (updated != null)
             return updated;
@@ -78,7 +82,7 @@ public class ActiveReplication {
                         saveObjectHandler(t, savedObjects);
                     }
 
-                    saveReqStateHandler(savedObjects);
+                    saveObjectHandler(ReqState.class, savedObjects);
                 }
             });
 
@@ -89,7 +93,11 @@ public class ActiveReplication {
                 setState.accept(req.getState());
                 // responder a todos os requests guardados
                 for (Tuple<?> t : savedObjects) {
-                    updateState.accept(t);
+                    Class<?> type = t.getType();
+                    if (type.equals(ReqState.class))
+                        reply(t.getMsg().getSender(), new RepState(getState.get()));
+                    else
+                        updateFunctions.get(t.getType()).accept(t.getMsg(), t.getObject());
                 }
 
                 finalReqStateHandler(getState);
@@ -119,15 +127,6 @@ public class ActiveReplication {
         s.handler(t, (msg, obj) -> {
             // guardar request
             savedObjects.add(new Tuple<>(t, msg, obj));
-        });
-    }
-
-    private void saveReqStateHandler(LinkedList<Tuple<?>> savedObjects) {
-
-        //handler para guardar ReqStates ate receber resposta com o estado
-        s.handler(ReqState.class, (msg, req) -> {
-            // guardar request
-            savedObjects.add(new Tuple<>(ReqState.class, msg, req));
         });
     }
 
