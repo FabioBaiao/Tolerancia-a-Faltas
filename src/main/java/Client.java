@@ -12,18 +12,18 @@ import java.util.Map;
 import java.util.Optional;
 
 // TODO: Close stub on exit
+// TODO: Complete methods
 public class Client implements Runnable {
 
     private static final String PROMPT = "$ ";
     private static final String SEP = "________________________________________";
-
     private static final String HELP =
             "addTask             add a new task\n" +
-                    "nextTask            get the next unassigned task\n" +
-                    "list                list your tasks\n" +
-                    "complete taskURL    mark the specified task as complete\n" +
-                    "help                print this help\n" +
-                    "exit                exit the app";
+            "nextTask            get the next unassigned task\n" +
+            "list                list your tasks\n" +
+            "complete taskURL    mark the specified task as complete\n" +
+            "help                print this help\n" +
+            "exit                exit the app";
 
     private final String privateGroupName;
     private final TaskScheduler taskScheduler;
