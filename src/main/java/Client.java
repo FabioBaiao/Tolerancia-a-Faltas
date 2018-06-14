@@ -64,7 +64,7 @@ public class Client implements Runnable {
                 System.out.print(PROMPT);
 
                 String line = in.readLine();
-                String[] args = (line == null) ? new String[]{"exit"} : line.split("[ \t]");
+                String[] args = (line == null) ? new String[]{"exit"} : line.split("[ \t]+");
 
                 commandMap.getOrDefault(args[0], this::handleInvalidCommand).apply(args);
             }
