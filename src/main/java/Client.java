@@ -41,7 +41,7 @@ public class Client implements Runnable {
         this.commandMap.put("addTask", this::addTask);
         this.commandMap.put("nextTask", this::nextTask);
         this.commandMap.put("list", this::list);
-        this.commandMap.put("done", this::done);
+        this.commandMap.put("complete", this::complete);
         this.commandMap.put("help", this::help);
         this.commandMap.put("exit", this::exit);
 
@@ -85,7 +85,7 @@ public class Client implements Runnable {
         String description = in.readLine();
 
         String url = taskScheduler.addTask(name, description, LocalDateTime.now());
-        System.out.println("Task added: " + url);
+        System.out.println("Task '" + name + "' successfully registered. Task url: " + url);
         return 0;
     }
 
@@ -102,9 +102,9 @@ public class Client implements Runnable {
             System.out.println("Assigned task");
             System.out.println(SEP);
             System.out.println("URL: " + task.getUrl());
-            System.out.println("name: " + task.getName());
-            System.out.println("description: " + task.getDescription());
-            System.out.println("creation date-time: " + task.getCreationDateTime());
+            System.out.println("Name: " + task.getName());
+            System.out.println("Description: " + task.getDescription());
+            System.out.println("Creation date-time: " + task.getCreationDateTime());
             System.out.println(SEP);
         } else {
             System.out.println("Currently there are no unassigned tasks");
@@ -116,9 +116,9 @@ public class Client implements Runnable {
         throw new UnsupportedOperationException("To be implemented (not prioritary)");
     }
 
-    public Integer done(String[] args) throws IOException {
+    public Integer complete(String[] args) throws IOException {
         if (args.length != 2) {
-            System.err.println("Usage: done taskURL");
+            System.err.println("Usage: complete taskURL");
             return -1;
         }
         String url = args[1];
