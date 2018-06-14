@@ -79,6 +79,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
         SpreadMessage msg = new SpreadMessage();
         msg.addGroup("servers");
+        msg.setAgreed();
         s.multicast(msg, req);
 
         return this.futureResult.join();

@@ -116,6 +116,7 @@ public class ActiveReplication {
     private void init() {
         SpreadMessage msg = new SpreadMessage();
         msg.addGroup(this.groupName);
+        msg.setAgreed();
 
         ReqState req = new ReqState(this.id);
 
