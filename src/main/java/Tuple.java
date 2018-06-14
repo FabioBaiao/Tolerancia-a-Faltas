@@ -3,12 +3,12 @@ import spread.SpreadMessage;
 public class Tuple<T> {
     private Class<T> type;
     private SpreadMessage msg;
-    private Req req;
+    private T object;
 
-    public Tuple(Class<T> type, SpreadMessage msg, Req req) {
+    public Tuple(Class<T> type, SpreadMessage msg, T object) {
         this.type = type;
         this.msg = msg;
-        this.req = req;
+        this.object = object;
     }
 
     public Class<T> getType() {
@@ -19,7 +19,7 @@ public class Tuple<T> {
         return msg;
     }
 
-    public Req getReq() {
-        return req;
+    public T getObject() {
+        return object;
     }
 }
