@@ -2,7 +2,7 @@ import replication.ActiveReplication;
 import replication.State;
 import replication.Tuple;
 import rmi.*;
-import serializers.TaskSchedulingTypeResolver;
+import serializers.ServerTaskSchedulingTypeResolver;
 import spread.MembershipInfo;
 import spread.SpreadException;
 import spread.SpreadGroup;
@@ -24,7 +24,7 @@ public class Server implements Runnable {
 
     public Server(String[] args) throws SpreadException {
 
-        this.ar = new ActiveReplication(Integer.parseInt(args[0]), true, new TaskSchedulingTypeResolver());
+        this.ar = new ActiveReplication(Integer.parseInt(args[0]), true, new ServerTaskSchedulingTypeResolver());
 
         this.ts = new TaskSchedulerImpl();
     }

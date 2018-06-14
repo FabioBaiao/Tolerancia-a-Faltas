@@ -5,7 +5,8 @@ import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
 import rmi.*;
-import serializers.TaskSchedulingTypeResolver;
+import serializers.BaseTaskSchedulingTypeResolver;
+import serializers.ServerTaskSchedulingTypeResolver;
 import spread.SpreadException;
 import spread.SpreadMessage;
 
@@ -27,7 +28,7 @@ public class TaskSchedulerStub implements TaskScheduler {
     private TaskSchedulerStub(String privateGroupName) throws SpreadException {
         //this.groupName = "all";
         this.s = new Spread(privateGroupName, false);
-        this.tc = new SingleThreadContext("cli-%d", new Serializer(new TaskSchedulingTypeResolver()));
+        this.tc = new SingleThreadContext("cli-%d", new Serializer(new BaseTaskSchedulingTypeResolver()));
 
         this.waitingId = -1;
         this.reqId = 0;
