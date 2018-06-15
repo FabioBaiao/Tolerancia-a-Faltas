@@ -87,7 +87,7 @@ public class Server implements Runnable {
         return types;
     }
 
-    private Map<Class<?>,BiConsumer<SpreadMessage,Object>> getUpdateFunctions() {
+    private Map<Class<?>, BiConsumer<SpreadMessage, Object>> getUpdateFunctions() {
         Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = new HashMap<>();
 
         updateFunctions.put(AddTaskReq.class, (msg, req) -> addTask(msg, (AddTaskReq) req));
