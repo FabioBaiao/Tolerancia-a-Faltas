@@ -1,3 +1,5 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spread.SpreadException;
 import tasks.Task;
 import tasks.TaskScheduler;
@@ -11,19 +13,20 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-// TODO: Close stub on exit
-// TODO: Complete methods
 public class Client implements Runnable {
+
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     private static final String PROMPT = "$ ";
     private static final String SEP = "________________________________________";
+
     private static final String HELP =
             "addTask             add a new task\n" +
-            "nextTask            get the next unassigned task\n" +
-            "list                list your tasks\n" +
-            "complete taskURL    mark the specified task as complete\n" +
-            "help                print this help\n" +
-            "exit                exit the app";
+                    "nextTask            get the next unassigned task\n" +
+                    "list                list your tasks\n" +
+                    "complete taskURL    mark the specified task as complete\n" +
+                    "help                print this help\n" +
+                    "exit                exit the app";
 
     private final String privateGroupName;
     private final TaskScheduler taskScheduler;
@@ -70,6 +73,8 @@ public class Client implements Runnable {
             }
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
+        } finally {
+            close();
         }
     }
 
@@ -85,7 +90,7 @@ public class Client implements Runnable {
         String description = in.readLine();
 
         String url = taskScheduler.addTask(name, description, LocalDateTime.now());
-        System.out.println("Task '" + name + "' successfully registered. Task url: " + url);
+        System.out.println("Task '" + name + "' successfully registered. Task URL: " + url);
         return 0;
     }
 
@@ -132,13 +137,20 @@ public class Client implements Runnable {
         return 0;
     }
 
+    public Integer handleInvalidCommand(String[] args) {
+        System.out.println("Invalid command '" + args[0] + "'. Try 'help'");
+        return 0;
+    }
+
     public Integer exit(String[] args) throws IOException {
         this.exit = true;
         return 0;
     }
 
-    public Integer handleInvalidCommand(String[] args) {
-        System.out.println("Invalid command '" + args[0] + "'. Try 'help'");
-        return 0;
+    private void close() {
+        if (taskScheduler instanceof TaskSchedulerStub) {
+            TaskSchedulerStub stub = (TaskSchedulerStub) taskScheduler;
+            stub.close();
+        }
     }
 }
