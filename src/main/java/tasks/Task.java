@@ -107,7 +107,7 @@ public class Task implements CatalystSerializable, Comparable<Task> {
         this.name = bufferInput.readString();
         this.description = bufferInput.readString();
 
-        this.completionDateTime = serializer.readObject(bufferInput);
+        this.creationDateTime = serializer.readObject(bufferInput);
 
         boolean isComplete = bufferInput.readBoolean();
         if (isComplete) {
