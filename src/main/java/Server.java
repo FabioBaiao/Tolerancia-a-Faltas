@@ -1,6 +1,5 @@
 import replication.ActiveReplication;
 import replication.State;
-import replication.Tuple;
 import rmi.*;
 import serializers.ServerTaskSchedulingTypeResolver;
 import spread.MembershipInfo;
@@ -43,7 +42,7 @@ public class Server implements Runnable {
         Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = getUpdateFunctions();
 
         ar.update(types, setState, getState, updateFunctions)
-                .thenRun(() -> createHandlers());
+                .thenRun(this::createHandlers);
 
     }
 
@@ -101,11 +100,11 @@ public class Server implements Runnable {
 
     private void createHandlers() {
 
-        this.ar.handler(AddTaskReq.class, (msg, req) -> addTask(msg, req));
-        this.ar.handler(AssignTaskReq.class, (msg, req) -> assignTask(msg, req));
-        this.ar.handler(CompleteTaskReq.class, (msg, req) -> completeTask(msg, req));
+        this.ar.handler(AddTaskReq.class, this::addTask);
+        this.ar.handler(AssignTaskReq.class, this::assignTask);
+        this.ar.handler(CompleteTaskReq.class, this::completeTask);
         // handler para detetar falhas de clientes
-        this.ar.handler(MembershipInfo.class, (msg, req) -> unassignAll(msg, req));
+        this.ar.handler(MembershipInfo.class, this::unassignAll);
     }
 
     public static void main(String[] args) {

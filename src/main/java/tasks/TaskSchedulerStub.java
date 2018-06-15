@@ -48,7 +48,6 @@ public class TaskSchedulerStub implements TaskScheduler {
     }
 
     private void registerHandlers() {
-
         s.handler(AddTaskRep.class, (msg, rep) -> receive(rep));
         s.handler(AssignTaskRep.class, (msg, rep) -> receive(rep));
         s.handler(CompleteTaskRep.class, (msg, rep) -> receive(rep));
@@ -120,7 +119,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     public void close() {
         try {
-            tc.execute(() -> s.close()).join().get();
+            tc.execute(s::close).join().get();
         } catch (ExecutionException ex) {
             logger.error(null, ex);
         } catch (InterruptedException ex) {
