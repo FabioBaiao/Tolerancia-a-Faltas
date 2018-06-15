@@ -3,6 +3,8 @@ package tasks;
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pt.haslab.ekit.Spread;
 import rmi.*;
 import serializers.BaseTaskSchedulingTypeResolver;
@@ -15,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class TaskSchedulerStub implements TaskScheduler {
+
+    private static final Logger logger = LoggerFactory.getLogger(TaskSchedulerStub.class);
 
     //private final String groupName;
     private final Spread s;
@@ -112,5 +116,18 @@ public class TaskSchedulerStub implements TaskScheduler {
 
         CompleteTaskRep rep = (CompleteTaskRep) sendAndReceive(req);
         return rep.getTask();
+    }
+
+    public void close() {
+        try {
+            tc.execute(() -> s.close()).join().get();
+        } catch (ExecutionException ex) {
+            logger.error(null, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ex);
+        } finally {
+            tc.close();
+        }
     }
 }
