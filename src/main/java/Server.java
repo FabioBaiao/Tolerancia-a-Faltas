@@ -238,7 +238,7 @@ public class Server implements Runnable {
 
         try {
 
-            new Thread(new Server(args)).start();
+            new Server(args).run();
 
 
         } catch (SpreadException e) {
