@@ -13,7 +13,7 @@ public class ServerTaskSchedulingTypeResolver extends BaseTaskSchedulingTypeReso
     @Override
     public void resolve(SerializerRegistry serializerRegistry) {
         super.resolve(serializerRegistry);
-        serializerRegistry.registerAbstract(PriorityQueue.class, PriorityQueueSerializer.class);
+        serializerRegistry.register(PriorityQueue.class, PriorityQueueSerializer.class);
         serializerRegistry.register(RepState.class);
         serializerRegistry.register(AckState.class);
         serializerRegistry.register(UnassignAll.class);
