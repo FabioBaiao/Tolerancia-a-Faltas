@@ -11,12 +11,13 @@ import serializers.BaseTaskSchedulingTypeResolver;
 import spread.SpreadException;
 import spread.SpreadMessage;
 
+import java.io.Closeable;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-public class TaskSchedulerStub implements TaskScheduler {
+public class TaskSchedulerStub implements TaskScheduler, Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(TaskSchedulerStub.class);
 
