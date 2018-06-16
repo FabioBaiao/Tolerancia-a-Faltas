@@ -219,7 +219,7 @@ public class Server implements Runnable {
 
         for (SpreadGroup m : members) {
             String member = m.toString();
-            if (member.compareTo(leader) < 0) {
+            if (member.compareTo(leader) < 0 && !infos.containsKey(member)) {
                 leader = member;
             }
         }
