@@ -4,28 +4,38 @@ import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.Serializer;
 import rmi.Rep;
+import spread.SpreadGroup;
+import tasks.TaskScheduler;
 
 public class RepState extends Rep {
 
-    private State state;
+    private TaskScheduler taskScheduler;
+    private String leader;
 
     public RepState() {}
 
-    public RepState(State state) {
-        this.state = state;
+    public RepState(TaskScheduler taskScheduler, String leader) {
+        this.taskScheduler = taskScheduler;
+        this.leader = leader;
     }
 
-    public State getState() {
-        return state;
+    public TaskScheduler getTaskScheduler() {
+        return taskScheduler;
+    }
+
+    public String getLeader() {
+        return leader;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-        serializer.writeObject(state, bufferOutput);
+        serializer.writeObject(taskScheduler, bufferOutput);
+        bufferOutput.writeString(leader);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-        this.state = serializer.readObject(bufferInput);
+        this.taskScheduler = serializer.readObject(bufferInput);
+        this.leader = bufferInput.readString();
     }
 }

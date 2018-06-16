@@ -6,6 +6,7 @@ import io.atomix.catalyst.serializer.SerializableTypeResolver;
 import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
 import rmi.Rep;
+import spread.MembershipInfo;
 import spread.SpreadException;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
@@ -20,7 +21,7 @@ import java.util.function.Supplier;
 
 public class ActiveReplication {
 
-    private int id;
+    private String privateName;
     private String groupName;
     private Spread s;
 
@@ -29,30 +30,101 @@ public class ActiveReplication {
     private CompletableFuture<ActiveReplication> opened;
     private CompletableFuture<ActiveReplication> updated;
 
-    public ActiveReplication(int id, boolean groupMembership, SerializableTypeResolver tr) throws SpreadException {
-        this.id = id;
-        this.groupName = "servers";
-        this.s = new Spread("srv-" + id, groupMembership);
+    public ActiveReplication(String privateName, boolean groupMembership, SerializableTypeResolver tr)
+            throws SpreadException {
+
+        this.privateName = privateName;
+        this.s = new Spread(privateName, groupMembership);
 
         this.tc = new SingleThreadContext("srv-%d", new Serializer(tr));
 
         tc.serializer()
-                .register(ReqState.class)
+                //.register(ReqState.class)
                 .register(RepState.class);
     }
 
-    public CompletableFuture<ActiveReplication> open() {
+    public CompletableFuture<ActiveReplication> open(String groupName, BiConsumer<SpreadMessage, MembershipInfo> handleMembershipInfo) {
         if (opened != null)
             return opened;
 
         opened = new CompletableFuture<>();
+        //updated = new CompletableFuture<>();
 
-        tc.execute(() -> s.open()).join().thenRun(() -> {
-            s.join(groupName);
-            opened.complete(this);
-        });
+        this.groupName = groupName;
+
+        //waitOwnJoinedMembership(handleMembershipInfo);
+
+        tc.execute(() -> s.open()).join()
+                .thenRun(() -> {
+                    s.join(groupName);
+                    opened.complete(this);
+                });
 
         return opened;
+    }
+
+    /*private void waitOwnJoinedMembership(BiConsumer<SpreadMessage, MembershipInfo> handleMembershipInfo) {
+        s.handler(MembershipInfo.class, (msg, info) -> {
+
+            String group = info.getGroup().toString();
+            if (group.equals(groupName) && info.isCausedByJoin()) {
+
+                String joined = info.getJoined().toString();
+                if (joined.equals(privateName)) {
+
+                    // unico membro
+                    if (info.getMembers().length == 1) {
+
+                        joinedMembershipInfoHandler(handleMembershipInfo);
+                        // registar handlers finais
+                        // definir-se como lider
+
+                        //updated.complete(this);
+                    }
+                    else {
+                        // guardar pedidos
+                        // esperar por estado
+                    }
+                }
+            }
+        });
+    }*/
+
+    private void joinedMembershipInfoHandler(BiConsumer<SpreadMessage, MembershipInfo> handleMembershipInfo) {
+        s.handler(MembershipInfo.class, (msg, info) -> {
+
+            String group = info.getGroup().toString();
+            if (group.equals(groupName) && info.isCausedByJoin()) {
+
+                // guardar info
+                // enviar estado
+
+
+
+                if (info.isCausedByDisconnect()) {
+
+                    String member = info.getDisconnected().toString();
+                    /*if (member.equals(leader)) {
+                        leaderElection();
+                        // enviar estado a infos guardados
+                    }*/
+                }
+            }
+
+            handleMembershipInfo.accept(msg, info);
+
+
+            /*else {
+
+                if (info.isCausedByDisconnect()) {
+                    if (leader.equals(privateName)) {
+                        // enviar UnassignAll
+                    }
+
+                    // guardar info
+                }
+            }*/
+        });
     }
 
     public CompletableFuture<ActiveReplication> update
@@ -69,7 +141,7 @@ public class ActiveReplication {
         LinkedList<Tuple<?>> savedObjects = new LinkedList<>();
 
         // primeiro processo
-        if (this.id == 0) {
+        /*if (this.id == 0) {
             finalReqStateHandler(getState);
 
             updated.complete(this);
@@ -108,7 +180,7 @@ public class ActiveReplication {
             });
 
             init();
-        }
+        }*/
 
         return updated;
     }
@@ -118,9 +190,9 @@ public class ActiveReplication {
         msg.addGroup(this.groupName);
         msg.setAgreed();
 
-        ReqState req = new ReqState(this.id);
+        //ReqState req = new ReqState(this.id);
 
-        s.multicast(msg, req);
+        //s.multicast(msg, req);
     }
 
     private <T> void saveObjectHandler(Class<T> t, LinkedList<Tuple<?>> savedObjects) {
@@ -137,7 +209,7 @@ public class ActiveReplication {
         s.handler(ReqState.class, (msg, req) -> {
             State state = getState.get();
 
-            reply(msg.getSender(), new RepState(state));
+            //reply(msg.getSender(), new RepState(state));
         });
     }
 
@@ -154,5 +226,9 @@ public class ActiveReplication {
 
     public void join(String groupName) {
         s.join(groupName);
+    }
+
+    public String getPrivateName() {
+        return privateName;
     }
 }

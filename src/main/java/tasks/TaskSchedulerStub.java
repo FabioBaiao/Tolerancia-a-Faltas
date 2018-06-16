@@ -42,7 +42,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
         instance.registerHandlers();
         instance.open();
-        instance.join("all");
+        instance.join("global");
 
         return instance;
     }
