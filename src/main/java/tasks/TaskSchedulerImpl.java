@@ -43,20 +43,20 @@ public class TaskSchedulerImpl extends State implements TaskScheduler {
         return url;
     }
 
-    public Optional<Task> assignTask(String privateGroupName) {
+    public Optional<Task> assignTask(String username) {
         Task task = unassignedTasks.poll();
 
         if (task == null) {
             return Optional.empty();
         }
-        Map<String, Task> userTasks = assignedTasks.computeIfAbsent(privateGroupName, k -> new HashMap<>());
+        Map<String, Task> userTasks = assignedTasks.computeIfAbsent(username, k -> new HashMap<>());
 
         userTasks.put(task.getUrl(), task);
         return Optional.of(task);
     }
 
-    public void unassignAll(String privateGroupName) {
-        Map<String, Task> userTasks = assignedTasks.remove(privateGroupName);
+    public void unassignAll(String username) {
+        Map<String, Task> userTasks = assignedTasks.remove(username);
 
         if (userTasks != null) {
             unassignedTasks.addAll(userTasks.values());
@@ -64,8 +64,8 @@ public class TaskSchedulerImpl extends State implements TaskScheduler {
         }
     }
 
-    public Optional<Task> completeTask(String privateGroupName, String url, LocalDateTime completionDateTime) {
-        Map<String, Task> userTasks = assignedTasks.get(privateGroupName);
+    public Optional<Task> completeTask(String username, String url, LocalDateTime completionDateTime) {
+        Map<String, Task> userTasks = assignedTasks.get(username);
 
         if (userTasks == null) {
             return Optional.empty();

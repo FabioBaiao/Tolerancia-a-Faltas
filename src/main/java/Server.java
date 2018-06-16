@@ -15,7 +15,10 @@ import tasks.Task;
 import tasks.TaskScheduler;
 import tasks.TaskSchedulerImpl;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class Server implements Runnable {
@@ -23,7 +26,7 @@ public class Server implements Runnable {
     private SpreadGroup serversGroup;
     private SpreadGroup globalGroup;
 
-    private String myPrivateName;
+    private String privateGroupName;
     private Spread s;
     private ThreadContext tc;
 
@@ -34,10 +37,9 @@ public class Server implements Runnable {
     Map<String, MembershipInfo> infos;
 
     public Server(String[] args) throws SpreadException {
+        String privateName = args[0];
 
-        String tempPrivateName = args[0];
-
-        this.s = new Spread(tempPrivateName, true);
+        this.s = new Spread(privateName, true);
         this.tc = new SingleThreadContext("srv-%d", new Serializer(new ServerTaskSchedulingTypeResolver()));
 
         this.ts = new TaskSchedulerImpl();
@@ -47,16 +49,13 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
-
         waitOwnJoinedMembership();
 
-        tc.execute(() -> s.open()).join()
-                .thenRun(() -> {
-                    this.myPrivateName = s.getPrivateGroup().toString();
-                    serversGroup = s.join("servers");
-                    globalGroup = s.join("global");
-                });
-
+        tc.execute(() -> s.open()).join().thenRun(() -> {
+            this.privateGroupName = s.getPrivateGroup().toString();
+            serversGroup = s.join("servers");
+            globalGroup = s.join("global");
+        });
     }
 
     private void waitOwnJoinedMembership() {
@@ -66,12 +65,12 @@ public class Server implements Runnable {
             if (group.equals(serversGroup) && info.isCausedByJoin()) {
 
                 String joined = info.getJoined().toString();
-                if (joined.equals(myPrivateName)) {
+                if (joined.equals(privateGroupName)) {
 
                     // unico membro
                     if (info.getMembers().length == 1) {
 
-                        leader = myPrivateName;
+                        leader = privateGroupName;
                         finalHandlers();
                     }
                     else {
@@ -164,7 +163,7 @@ public class Server implements Runnable {
 
             if (info.isCausedByJoin()) {
 
-                if (leader.equals(myPrivateName)) {
+                if (leader.equals(privateGroupName)) {
 
                     SpreadGroup joined = info.getJoined();
 
@@ -181,7 +180,7 @@ public class Server implements Runnable {
 
                     leaderElection(info.getMembers());
 
-                    if (leader.equals(myPrivateName)) {
+                    if (leader.equals(privateGroupName)) {
 
                         // reenviar infos guardadas
                         for (MembershipInfo mi : infos.values()) {
@@ -197,7 +196,7 @@ public class Server implements Runnable {
 
                 String disconnected = info.getDisconnected().toString();
 
-                if (leader.equals(myPrivateName)) {
+                if (leader.equals(privateGroupName)) {
 
                     send(serversGroup, new UnassignAll(disconnected));
                 }
@@ -216,7 +215,7 @@ public class Server implements Runnable {
     }
 
     private void leaderElection(SpreadGroup[] members) {
-        leader = myPrivateName;
+        leader = privateGroupName;
 
         for (SpreadGroup m : members) {
             String member = m.toString();
@@ -235,11 +234,9 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) {
-
         try {
 
             new Server(args).run();
-
 
         } catch (SpreadException e) {
             e.printStackTrace();

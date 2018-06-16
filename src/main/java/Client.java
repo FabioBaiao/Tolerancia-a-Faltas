@@ -28,16 +28,16 @@ public class Client implements Runnable {
             "help                print this help\n" +
             "exit                exit the app";
 
-    private final String privateGroupName;
+    private final String privateName;
     private final TaskScheduler taskScheduler;
     private final BufferedReader in;
     private final Map<String, CheckedIOFunction<String[], Integer>> commandMap;
 
     private boolean exit;
 
-    public Client(String name) throws SpreadException {
-        this.privateGroupName = name;
-        this.taskScheduler = TaskSchedulerStub.newInstance(name);
+    public Client(String privateName) throws SpreadException {
+        this.privateName = privateName;
+        this.taskScheduler = TaskSchedulerStub.newInstance(privateName);
         this.in = new BufferedReader(new InputStreamReader(System.in));
 
         this.commandMap = new HashMap<>();
@@ -99,7 +99,7 @@ public class Client implements Runnable {
             System.err.println("Usage: nextTask");
             return -1;
         }
-        Optional<Task> maybeTask = taskScheduler.assignTask(privateGroupName);
+        Optional<Task> maybeTask = taskScheduler.assignTask(privateName);
 
         if (maybeTask.isPresent()) {
             Task task = maybeTask.get();
@@ -128,7 +128,7 @@ public class Client implements Runnable {
         }
         String url = args[1];
 
-        Optional<Task> maybeTask = taskScheduler.completeTask(privateGroupName, url, LocalDateTime.now());
+        Optional<Task> maybeTask = taskScheduler.completeTask(privateName, url, LocalDateTime.now());
         if (maybeTask.isPresent()) {
             System.out.println("Completed task '" + maybeTask.get().getName() + "'");
         } else {

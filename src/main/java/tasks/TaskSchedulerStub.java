@@ -29,17 +29,17 @@ public class TaskSchedulerStub implements TaskScheduler, Closeable {
     private int waitingId;
     private int reqId;
 
-    private TaskSchedulerStub(String privateGroupName) throws SpreadException {
+    private TaskSchedulerStub(String privateName) throws SpreadException {
         //this.groupName = "all";
-        this.s = new Spread(privateGroupName, false);
+        this.s = new Spread(privateName, false);
         this.tc = new SingleThreadContext("cli-%d", new Serializer(new BaseTaskSchedulingTypeResolver()));
 
         this.waitingId = -1;
         this.reqId = 0;
     }
 
-    public static TaskSchedulerStub newInstance(String privateGroupName) throws SpreadException {
-        TaskSchedulerStub instance = new TaskSchedulerStub(privateGroupName);
+    public static TaskSchedulerStub newInstance(String privateName) throws SpreadException {
+        TaskSchedulerStub instance = new TaskSchedulerStub(privateName);
 
         instance.registerHandlers();
         instance.open();
@@ -97,21 +97,21 @@ public class TaskSchedulerStub implements TaskScheduler, Closeable {
     }
 
     @Override
-    public Optional<Task> assignTask(String privateGroupName) {
-        AssignTaskReq req = new AssignTaskReq(this.reqId, privateGroupName);
+    public Optional<Task> assignTask(String username) {
+        AssignTaskReq req = new AssignTaskReq(this.reqId, username);
 
         AssignTaskRep rep = (AssignTaskRep) sendAndReceive(req);
         return rep.getTask();
     }
 
     @Override
-    public void unassignAll(String privateGroupName) {
+    public void unassignAll(String username) {
         throw new UnsupportedOperationException("To be implemented");
     }
 
     @Override
-    public Optional<Task> completeTask(String privateGroupName, String url, LocalDateTime completionDateTime) {
-        CompleteTaskReq req = new CompleteTaskReq(this.reqId, privateGroupName, url, completionDateTime);
+    public Optional<Task> completeTask(String username, String url, LocalDateTime completionDateTime) {
+        CompleteTaskReq req = new CompleteTaskReq(this.reqId, username, url, completionDateTime);
 
         CompleteTaskRep rep = (CompleteTaskRep) sendAndReceive(req);
         return rep.getTask();

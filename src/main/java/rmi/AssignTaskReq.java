@@ -6,29 +6,29 @@ import io.atomix.catalyst.serializer.Serializer;
 
 public class AssignTaskReq extends Req {
 
-    private String privateGroupName;
+    private String username;
 
     public AssignTaskReq() {
     }
 
-    public AssignTaskReq(int id, String privateGroupName) {
+    public AssignTaskReq(int id, String username) {
         super(id);
-        this.privateGroupName = privateGroupName;
+        this.username = username;
     }
 
-    public String getPrivateGroupName() {
-        return privateGroupName;
+    public String getUsername() {
+        return username;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
         super.writeObject(bufferOutput, serializer);
-        bufferOutput.writeString(privateGroupName);
+        bufferOutput.writeString(username);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
         super.readObject(bufferInput, serializer);
-        this.privateGroupName = bufferInput.readString();
+        this.username = bufferInput.readString();
     }
 }

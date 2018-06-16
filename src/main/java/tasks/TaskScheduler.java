@@ -7,9 +7,9 @@ public interface TaskScheduler {
 
     String addTask(String name, String description, LocalDateTime creationDateTime);
 
-    Optional<Task> assignTask(String privateGroupName);
+    Optional<Task> assignTask(String username);
 
-    void unassignAll(String privateGroupName);
+    void unassignAll(String username);
 
-    Optional<Task> completeTask(String privateGroupName, String url, LocalDateTime completionDateTime);
+    Optional<Task> completeTask(String username, String url, LocalDateTime completionDateTime);
 }
