@@ -11,8 +11,8 @@ public class AssignTaskReq extends Req {
     public AssignTaskReq() {
     }
 
-    public AssignTaskReq(String privateGroupName) {
-        super();
+    public AssignTaskReq(int id, String privateGroupName) {
+        super(id);
         this.privateGroupName = privateGroupName;
     }
 

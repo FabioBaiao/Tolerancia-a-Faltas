@@ -16,12 +16,12 @@ public class AddTaskReq extends Req {
         super();
     }
 
-    public AddTaskReq(String name, String description) {
-        this(name, description, LocalDateTime.now());
+    public AddTaskReq(int id, String name, String description) {
+        this(id, name, description, LocalDateTime.now());
     }
 
-    public AddTaskReq(String name, String description, LocalDateTime creationDateTime) {
-        super();
+    public AddTaskReq(int id, String name, String description, LocalDateTime creationDateTime) {
+        super(id);
         this.name = name;
         this.description = description;
         this.creationDateTime = creationDateTime;

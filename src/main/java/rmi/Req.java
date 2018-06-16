@@ -11,6 +11,10 @@ public abstract class Req implements CatalystSerializable {
 
     public Req() {}
 
+    public Req(int id) {
+        this.id = id;
+    }
+
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
         bufferOutput.writeInt(id);
     }
@@ -21,9 +25,5 @@ public abstract class Req implements CatalystSerializable {
 
     public int getId() {
         return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

@@ -16,12 +16,12 @@ public class CompleteTaskReq extends Req {
         super();
     }
 
-    public CompleteTaskReq(String privateGroupName, String url) {
-        this(privateGroupName, url, LocalDateTime.now());
+    public CompleteTaskReq(int id, String privateGroupName, String url) {
+        this(id, privateGroupName, url, LocalDateTime.now());
     }
 
-    public CompleteTaskReq(String privateGroupName, String url, LocalDateTime completionDateTime) {
-        super();
+    public CompleteTaskReq(int id, String privateGroupName, String url, LocalDateTime completionDateTime) {
+        super(id);
         this.privateGroupName = privateGroupName;
         this.url = url;
         this.completionDateTime = completionDateTime;

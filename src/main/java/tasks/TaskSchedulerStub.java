@@ -77,8 +77,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     private Rep sendAndReceive(Req req) {
         this.futureResult = new CompletableFuture<>();
-        this.waitingId = this.reqId;
-        req.setId(this.reqId++);
+        this.waitingId = this.reqId++;
 
         SpreadMessage msg = new SpreadMessage();
         msg.addGroup("servers");
@@ -90,7 +89,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     @Override
     public String addTask(String name, String description, LocalDateTime creationDateTime) {
-        AddTaskReq req = new AddTaskReq(name, description, creationDateTime);
+        AddTaskReq req = new AddTaskReq(this.reqId, name, description, creationDateTime);
 
         AddTaskRep rep = (AddTaskRep) sendAndReceive(req);
         return rep.getUrl();
@@ -98,7 +97,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     @Override
     public Optional<Task> assignTask(String privateGroupName) {
-        AssignTaskReq req = new AssignTaskReq(privateGroupName);
+        AssignTaskReq req = new AssignTaskReq(this.reqId, privateGroupName);
 
         AssignTaskRep rep = (AssignTaskRep) sendAndReceive(req);
         return rep.getTask();
@@ -111,7 +110,7 @@ public class TaskSchedulerStub implements TaskScheduler {
 
     @Override
     public Optional<Task> completeTask(String privateGroupName, String url, LocalDateTime completionDateTime) {
-        CompleteTaskReq req = new CompleteTaskReq(privateGroupName, url, completionDateTime);
+        CompleteTaskReq req = new CompleteTaskReq(this.reqId, privateGroupName, url, completionDateTime);
 
         CompleteTaskRep rep = (CompleteTaskRep) sendAndReceive(req);
         return rep.getTask();
