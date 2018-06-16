@@ -22,11 +22,11 @@ public class Client implements Runnable {
 
     private static final String HELP =
             "addTask             add a new task\n" +
-                    "nextTask            get the next unassigned task\n" +
-                    "list                list your tasks\n" +
-                    "complete taskURL    mark the specified task as complete\n" +
-                    "help                print this help\n" +
-                    "exit                exit the app";
+            "nextTask            get the next unassigned task\n" +
+            "list                list your tasks\n" +
+            "complete taskURL    mark the specified task as complete\n" +
+            "help                print this help\n" +
+            "exit                exit the app";
 
     private final String privateGroupName;
     private final TaskScheduler taskScheduler;
@@ -94,7 +94,7 @@ public class Client implements Runnable {
         return 0;
     }
 
-    public Integer nextTask(String[] args) throws IOException {
+    public Integer nextTask(String[] args) {
         if (args.length != 1) {
             System.err.println("Usage: nextTask");
             return -1;
@@ -117,22 +117,27 @@ public class Client implements Runnable {
         return 0;
     }
 
-    public Integer list(String[] args) throws IOException {
+    public Integer list(String[] args) {
         throw new UnsupportedOperationException("To be implemented (not prioritary)");
     }
 
-    public Integer complete(String[] args) throws IOException {
+    public Integer complete(String[] args) {
         if (args.length != 2) {
             System.err.println("Usage: complete taskURL");
             return -1;
         }
         String url = args[1];
 
-        taskScheduler.completeTask(privateGroupName, url, LocalDateTime.now());
+        Optional<Task> maybeTask = taskScheduler.completeTask(privateGroupName, url, LocalDateTime.now());
+        if (maybeTask.isPresent()) {
+            System.out.println("Completed task '" + maybeTask.get().getName() + "'");
+        } else {
+            System.out.println("Task '" + url + "' is not assigned to you");
+        }
         return 0;
     }
 
-    public Integer help(String[] args) throws IOException {
+    public Integer help(String[] args) {
         System.out.println(HELP);
         return 0;
     }
@@ -142,7 +147,7 @@ public class Client implements Runnable {
         return 0;
     }
 
-    public Integer exit(String[] args) throws IOException {
+    public Integer exit(String[] args) {
         this.exit = true;
         return 0;
     }
