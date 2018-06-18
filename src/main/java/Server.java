@@ -15,10 +15,7 @@ import tasks.Task;
 import tasks.TaskScheduler;
 import tasks.TaskSchedulerImpl;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Server implements Runnable {
@@ -34,7 +31,7 @@ public class Server implements Runnable {
 
     private TaskScheduler ts;
 
-    Map<String, MembershipInfo> infos;
+    List<String> disconnClients;
 
     public Server(String[] args) throws SpreadException {
         String privateName = args[0];
@@ -44,7 +41,7 @@ public class Server implements Runnable {
 
         this.ts = new TaskSchedulerImpl();
 
-        this.infos = new HashMap<>();
+        this.disconnClients = new ArrayList<>();
     }
 
     @Override
@@ -86,10 +83,11 @@ public class Server implements Runnable {
 
     private void receiveStateHandler(LinkedList<Tuple<?>> savedMessages) {
         s.handler(RepState.class, (msg, rep) -> {
-            send(serversGroup, new AckState());
+            //send(serversGroup, new AckState());
 
             ts = rep.getTaskScheduler();
             leader = rep.getLeader();
+            disconnClients = rep.getInfos();
 
             Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = getUpdateFunctions();
 
@@ -104,7 +102,7 @@ public class Server implements Runnable {
     }
 
     private void saveRequestsHandlers(LinkedList<Tuple<?>> savedMessages) {
-        s.handler(AckState.class, (msg, ack) -> savedMessages.add(new Tuple<>(AckState.class, msg, ack)));
+        //s.handler(AckState.class, (msg, ack) -> savedMessages.add(new Tuple<>(AckState.class, msg, ack)));
         s.handler(AddTaskReq.class, (msg, req) -> savedMessages.add(new Tuple<>(AddTaskReq.class, msg, req)));
         s.handler(AssignTaskReq.class, (msg, req) -> savedMessages.add(new Tuple<>(AssignTaskReq.class, msg, req)));
         s.handler(CompleteTaskReq.class, (msg, req) -> savedMessages.add(new Tuple<>(CompleteTaskReq.class, msg, req)));
@@ -115,7 +113,7 @@ public class Server implements Runnable {
     private Map<Class<?>, BiConsumer<SpreadMessage, Object>> getUpdateFunctions() {
         Map<Class<?>, BiConsumer<SpreadMessage, Object>> updateFunctions = new HashMap<>();
 
-        updateFunctions.put(AckState.class, (msg, ack) -> ackState(msg, (AckState) ack));
+        //updateFunctions.put(AckState.class, (msg, ack) -> ackState(msg, (AckState) ack));
         updateFunctions.put(AddTaskReq.class, (msg, req) -> addTask(msg, (AddTaskReq) req));
         updateFunctions.put(AssignTaskReq.class, (msg, req) -> assignTask(msg, (AssignTaskReq) req));
         updateFunctions.put(CompleteTaskReq.class, (msg, req) -> completeTask(msg, (CompleteTaskReq) req));
@@ -126,7 +124,7 @@ public class Server implements Runnable {
     }
 
     private void finalHandlers() {
-        s.handler(AckState.class, this::ackState);
+        //s.handler(AckState.class, this::ackState);
         s.handler(AddTaskReq.class, this::addTask);
         s.handler(AssignTaskReq.class, this::assignTask);
         s.handler(CompleteTaskReq.class, this::completeTask);
@@ -134,10 +132,10 @@ public class Server implements Runnable {
         s.handler(UnassignAll.class, this::unassignAll);
     }
 
-    private void ackState(SpreadMessage msg, AckState ack) {
+    /*private void ackState(SpreadMessage msg, AckState ack) {
         // remover info guardada
         infos.remove(msg.getSender().toString());
-    }
+    }*/
 
     private void addTask(SpreadMessage msg, AddTaskReq req) {
         String url = ts.addTask(req.getName(), req.getDescription(), req.getCreationDateTime());
@@ -163,15 +161,15 @@ public class Server implements Runnable {
 
             if (info.isCausedByJoin()) {
 
-                if (leader.equals(privateGroupName)) {
+                SpreadGroup joined = info.getJoined();
+                //if (leader.equals(privateGroupName)) {
 
-                    SpreadGroup joined = info.getJoined();
+                send(joined, new RepState(ts, leader, disconnClients));
+                //}
 
-                    send(joined, new RepState(ts, leader));
+                // guardar info ate receber confirmacao
+                //infos.put(joined.toString(), info);
 
-                    // guardar info ate receber confirmacao
-                    infos.put(joined.toString(), info);
-                }
             }
             else if (info.isCausedByDisconnect()) {
 
@@ -183,8 +181,8 @@ public class Server implements Runnable {
                     if (leader.equals(privateGroupName)) {
 
                         // reenviar infos guardadas
-                        for (MembershipInfo mi : infos.values()) {
-                            membershipInfo(null, mi);
+                        for (String disconnCli : disconnClients) {
+                            send(serversGroup, new UnassignAll(disconnCli));
                         }
                     }
                 }
@@ -202,7 +200,7 @@ public class Server implements Runnable {
                 }
 
                 // guardar info ate receber request de unassignAll
-                infos.put(disconnected, info);
+                disconnClients.add(disconnected);
             }
         }
     }
@@ -211,7 +209,7 @@ public class Server implements Runnable {
         ts.unassignAll(op.getDisconnected());
 
         // remover info guardada
-        infos.remove(op.getDisconnected());
+        disconnClients.remove(op.getDisconnected());
     }
 
     private void leaderElection(SpreadGroup[] members) {
@@ -219,7 +217,7 @@ public class Server implements Runnable {
 
         for (SpreadGroup m : members) {
             String member = m.toString();
-            if (member.compareTo(leader) < 0 && !infos.containsKey(member)) {
+            if (member.compareTo(leader) < 0 /*&& !infos.containsKey(member)*/) {
                 leader = member;
             }
         }
