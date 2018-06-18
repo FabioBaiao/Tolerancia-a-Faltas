@@ -2,8 +2,8 @@ package tasks;
 
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
+import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
-import replication.State;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 
 // Not thread safe
-public class TaskSchedulerImpl extends State implements TaskScheduler {
+public class TaskSchedulerImpl implements TaskScheduler, CatalystSerializable {
 
     private static long nextTaskId = 0;
 

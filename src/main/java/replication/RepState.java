@@ -2,6 +2,7 @@ package replication;
 
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
+import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 import rmi.Rep;
 import spread.MembershipInfo;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class RepState extends Rep {
+public class RepState implements CatalystSerializable {
 
     private TaskScheduler taskScheduler;
     private String leader;
